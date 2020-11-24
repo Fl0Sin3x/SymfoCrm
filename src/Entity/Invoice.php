@@ -4,6 +4,9 @@ namespace App\Entity;
 
 use App\Repository\InvoiceRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -14,6 +17,8 @@ use Doctrine\ORM\Mapping as ORM;
  *      "pagination_items_per_page"=20
  *     }
  *    )
+ * @ApiFilter(SearchFilter::class)
+ * @ApiFilter(OrderFilter::class properties={"amount","sentAt"})
  */
 
 class Invoice
