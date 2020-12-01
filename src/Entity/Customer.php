@@ -6,7 +6,6 @@ use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -16,11 +15,6 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=CustomerRepository::class)
  * @ApiResource(
- *  collectionOperations={"GET","POST"},
- *  itemOperations={"GET","PUT","DELETE"},
- *  subresourceOperations={
- *      "invoices_subresource_get"={"path"="/customers/{id}/invoices"}
- *     },
  *  normalizationContext={
  *       "groups"={"customers_read"}
  *   }
@@ -65,15 +59,37 @@ class Customer
     /**
      * @ORM\OneToMany(targetEntity=Invoice::class, mappedBy="customer")
      * @Groups({"customers_read"})
-     *@ApiSubresource
      */
     private $invoices;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="customers")
-     * @Groups({"customers_read", "invoices_read"})
+     * @Groups({"customers_read"})
      */
     private $user;
+
+    /**
+     * Permet de calculer le total des invoices
+     * @Groups({"customers_read"})
+     * @return float
+     */
+    public function getTotalAmount(): float {
+        return array_reduce($this->invoices->toArray(), function ($total, $invoice){
+            return $total + $invoice->getAmount();
+        }, 0);
+    }
+
+    /**
+     * Récupere le montant total non payé (montant total hors factures payées ou annulées )
+     * @groups({"customers_read"})
+     * @return float
+     */
+    public function getUnpaidAmount(): float {
+        return array_reduce($this->invoices->toArray(), function ($total, $invoice){
+            return $total + ($invoice->getStatus() === "PAID" || $invoice->getStatus() === "CANCELLED" ? 0 :
+                    $invoice->getAmount());
+        }, 0);
+    }
 
     public function __construct()
     {

@@ -13,21 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=InvoiceRepository::class)
  * @ApiResource(
- *  subresourceOperations={
- *        "api_customers_invoices_get_subresource"={
- *          "normalization_context"={"groups"={"invoices_subresource"}}
- *      }
- *     },
- *     itemOperations={"GET","PUT","DELETE","increment"={
- *     "method"="post",
- *     "path"="/invoices/{id}/increment",
- *     "controller"="App\Controller\InvoiceIncrementationController",
- *     "openapi_context"={
- *        "summary"="Incrémente une facture",
- *        "description"="Incrémente le chrono d'une facture donnée"
- *      }
- *    }
- *  },
  *  attributes={
  *      "pagination_enabled"=true,
  *      "pagination_items_per_page"=20
@@ -44,32 +29,32 @@ class Invoice
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"invoices_read","invoices_subresource"})
+     * @Groups({"invoices_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="float")
-     * @Groups({"invoices_read","customers_read","invoices_subresource"})
+     * @Groups({"invoices_read","customers_read"})
      */
     private $amount;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"invoices_read","customers_read","invoices_subresource"})
+     * @Groups({"invoices_read","customers_read"})
      */
     private $sentAt;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"invoices_read","customers_read","invoices_subresource"})
+     * @Groups({"invoices_read","customers_read"})
      */
     private $status;
 
     /**
      * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="invoices")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"invoices_read","invoices_subresource"})
+     * @Groups({"invoices_read"})
      */
     private $customer;
 
@@ -80,12 +65,11 @@ class Invoice
     private $chrono;
 
     /**
-     * Permet de récupérer le user à qui appartient la facture
-     * @Groups({"invoices_read","invoices_subresource"})
-     * @return User
+     * Permet de récupérer l'utilisateur à qui appartient la facture
+     * @Groups({"invoices_read"})
+     * @return user
      */
-    public function getUser(): User
-    {
+    public function getUser(): user {
         return $this->customer->getUser();
     }
 
