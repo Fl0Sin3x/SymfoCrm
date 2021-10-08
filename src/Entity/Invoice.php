@@ -7,7 +7,10 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\DateTime;
+use Symfony\Component\Validator\Constraints\DateTimeValidator;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -32,7 +35,10 @@ use Doctrine\ORM\Mapping as ORM;
  *      "pagination_enabled"=true,
  *      "pagination_items_per_page"=20
  *     },
- *     normalizationContext={"groups"={"invoices_read"}}
+ *     normalizationContext={"groups"={"invoices_read"}},
+ *     denormalizationContext={"disable_type_enforcement"=true}
+ *
+ *
  *    )
  * @ApiFilter(SearchFilter::class)
  * @ApiFilter(OrderFilter::class, properties={"amount","sentAt"})
@@ -51,18 +57,24 @@ class Invoice
     /**
      * @ORM\Column(type="float")
      * @Groups({"invoices_read","customers_read","invoices_subresource"})
+     * @Assert\NotBlank(message= "Le montant de la facture est obligatoire !")
+     * @Assert\Type(type="numeric",message= "Le montant de la facture dois etre un nombre !")
      */
     private $amount;
 
     /**
      * @ORM\Column(type="datetime")
      * @Groups({"invoices_read","customers_read","invoices_subresource"})
+     * @Assert\DateTime(message= "La date doit être au format YYYY-MM-DD !")
+     * @Assert\NotBlank(message= "La date d'envoi doit être renseigné !")
      */
     private $sentAt;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups({"invoices_read","customers_read","invoices_subresource"})
+     * @Assert\NotBlank(message= "Le statut de la facture est obligatoire")
+     * @Assert\Choice(choices={"SENT", "PAID", "CANCELLED"}, message= "Le statut doit être SENT,PAID ou CANCELLED")
      */
     private $status;
 
@@ -70,12 +82,16 @@ class Invoice
      * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="invoices")
      * @ORM\JoinColumn(nullable=false)
      * @Groups({"invoices_read","invoices_subresource"})
+     * @Assert\NotBlank(message= "Le clien de la facture dois être renseigné")
      */
     private $customer;
 
     /**
      * @ORM\Column(type="integer")
      * @Groups({"invoices_read","customers_read"})
+     * @Assert\NotBlank(message= "il faut absolument un chrono pour la facture")
+     * @Assert\Type(type="integer", message="Le chrono doit être un nombre")
+     *
      */
     private $chrono;
 
@@ -99,7 +115,7 @@ class Invoice
         return $this->amount;
     }
 
-    public function setAmount(float $amount): self
+    public function setAmount($amount): self
     {
         $this->amount = $amount;
 
@@ -111,7 +127,7 @@ class Invoice
         return $this->sentAt;
     }
 
-    public function setSentAt(\DateTimeInterface $sentAt): self
+    public function setSentAt($sentAt): self
     {
         $this->sentAt = $sentAt;
 
@@ -147,7 +163,7 @@ class Invoice
         return $this->chrono;
     }
 
-    public function setChrono(int $chrono): self
+    public function setChrono($chrono): self
     {
         $this->chrono = $chrono;
 
