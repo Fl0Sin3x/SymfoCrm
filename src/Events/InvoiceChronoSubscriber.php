@@ -43,10 +43,7 @@ class InvoiceChronoSubscriber implements EventSubscriberInterface{
             $invoice->setChrono($nextChrono);
         }
 
-        if (empty($invoice->getSentAt())) {
-            $invoice->setSentAt(new \DateTime());
-            dd($invoice);
-        }
+
     }
 }
 
